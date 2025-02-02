@@ -28,7 +28,6 @@ class Tricycle{
         float encoder_to_angle(uint32_t tick);
         float encoder_to_meters(uint32_t tick, uint32_t next_tick);
 
-
     public:
     
         // Constructor
@@ -51,7 +50,7 @@ class Tricycle{
         uint16_t get_max_steer();
         uint16_t get_max_traction();
         
-
         // Step function (ODE)
-        void step(double next_timestamp, uint32_t next_tick_traction);
+        void step(uint32_t next_tick_traction);
+        void write_tricycle_pose(std::string name_file);
 };

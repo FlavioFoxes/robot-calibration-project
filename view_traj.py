@@ -23,13 +23,26 @@ for l in lines:
 	x_model.append(float(pos_model[0]))
 	y_model.append(float(pos_model[1]))
 
+
+
+ft = open("example.txt")
+lines_t = ft.read().splitlines()
+x_t = []
+y_t = []
+for l in lines_t:
+	tokens = l.split()
+	x_t.append(float(tokens[0]))
+	y_t.append(float(tokens[1]))
+
+
+
 x_np = np.asarray(x)
 y_np = np.asarray(y)
 x_model_np = np.asarray(x_model)
 y_model_np = np.asarray(y_model)
 fig = plt.figure()
 ax = fig.add_subplot(111)
-ax.scatter(x, y)
+ax.scatter(x_t, y_t)
 ax.scatter(x_model, y_model)
 ax.axis("equal")
 plt.show()

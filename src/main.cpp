@@ -9,18 +9,10 @@ using namespace Eigen;
 
 int main(){
 
-
-	MatrixXd m(2,2);
-	m(0,0) = 3;
-	m(1,0) = 2.5;
-	m(0,1) = -1;
-	m(1,1) = m(1,0) + m(0,1);
-	// std::cout << m << std::endl;
-		
 	// Transformation matrix
-	Transform<float, 3, Affine> t;
-	t = Translation<float, 3>(Vector3f(1.f, 1.f, 0.f));
-	t.rotate(AngleAxis<float>(M_PI_2, Vector3f::UnitZ()));
+	// Transform<float, 3, Affine> t;
+	// t = Translation<float, 3>(Vector3f(1.f, 1.f, 0.f));
+	// t.rotate(AngleAxis<float>(M_PI_2, Vector3f::UnitZ()));
 
 
 	// Create dataset
@@ -28,11 +20,11 @@ int main(){
 
 	
 	// Take initial information to create tricycle
-	double timestamp = dataset.time[0];
-	uint32_t tick_s = dataset.ticks_steer[0];
-	uint32_t tick_t = dataset.ticks_traction[0];
-	Vector3f model_pose(dataset.model_pose_x[0], dataset.model_pose_y[0], 0.f);
-	float theta(dataset.model_pose_theta[0]);
+	double timestamp = dataset.time[69];
+	uint32_t tick_s = dataset.ticks_steer[69];
+	uint32_t tick_t = dataset.ticks_traction[69];
+	Vector3f model_pose(dataset.model_pose_x[69], dataset.model_pose_y[69], 0.f);
+	float theta(dataset.model_pose_theta[69]);
 
 	// Create tricycle with starting information
 	Tricycle tricycle = Tricycle(timestamp, 
@@ -41,6 +33,11 @@ int main(){
 								model_pose,
 								theta);
 
-	tricycle.step(timestamp, tick_t);
-	
+	std::cout << dataset.time.size() << std::endl;
+	for(int i=70; i<dataset.time.size(); ++i){
+		double next_tick_t = dataset.ticks_traction[i];
+		tricycle.step(next_tick_t);
+	}
+
+
 }
