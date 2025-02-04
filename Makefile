@@ -9,7 +9,7 @@ _DEPS = utils.h tricycle.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 _OBJ = utils.o tricycle.o main.o 
-OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
+OBJ = $(patsubst %, $(ODIR)/% ,$(_OBJ))
 
 SRCDIR = src
 

@@ -37,6 +37,15 @@ float Tricycle::get_orientation()
     return _orientation;
 }
 
+Vector3f Tricycle::get_sensor_position(){
+    return _sensor_position;
+};  
+
+float Tricycle::get_sensor_orientation(){
+    return _sensor_orientation;
+}  
+
+
 float Tricycle::get_steering_angle()
 {
     return _steering_angle;
