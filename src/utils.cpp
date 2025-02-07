@@ -31,18 +31,18 @@ namespace utils{
             dataset.ticks_traction.push_back(static_cast<uint32_t>(stoul(temp)));
 
             s >> temp >> temp;
-            dataset.model_pose_x.push_back(stof(temp));
+            dataset.model_pose_x.push_back(stod(temp));
             
             s >> temp;
-            dataset.model_pose_y.push_back(stof(temp));
+            dataset.model_pose_y.push_back(stod(temp));
             s >> temp;
-            dataset.model_pose_theta.push_back(stof(temp));
+            dataset.model_pose_theta.push_back(stod(temp));
             s >> temp >> temp;
-            dataset.tracker_pose_x.push_back(stof(temp));
+            dataset.tracker_pose_x.push_back(stod(temp));
             s >> temp;
-            dataset.tracker_pose_y.push_back(stof(temp));
+            dataset.tracker_pose_y.push_back(stod(temp));
             s >> temp;
-            dataset.tracker_pose_theta.push_back(stof(temp));
+            dataset.tracker_pose_theta.push_back(stod(temp));
             
         }
         // Close the file stream once all lines have been read

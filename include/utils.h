@@ -22,12 +22,12 @@ namespace utils{
         vector<double> time;
         vector<uint32_t> ticks_steer;
         vector<uint32_t> ticks_traction;
-        vector<float> model_pose_x;
-        vector<float> model_pose_y;
-        vector<float> model_pose_theta;
-        vector<float> tracker_pose_x;
-        vector<float> tracker_pose_y;
-        vector<float> tracker_pose_theta;       
+        vector<double> model_pose_x;
+        vector<double> model_pose_y;
+        vector<double> model_pose_theta;
+        vector<double> tracker_pose_x;
+        vector<double> tracker_pose_y;
+        vector<double> tracker_pose_theta;       
     };
 
     Dataset create_dataset(string name_file);
