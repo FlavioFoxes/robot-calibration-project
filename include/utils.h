@@ -7,6 +7,9 @@
 #include <vector>
 #include <stdlib.h>
 #include <assert.h>
+#include <Eigen/Geometry>
+
+
 
 // Definition of ASSERT with custom message
 #define ASSERT(condition, message) \
@@ -17,6 +20,8 @@
 
 namespace utils{
     using namespace std;
+    using namespace Eigen;
+
 
     struct Dataset{
         vector<double> time;
@@ -31,4 +36,9 @@ namespace utils{
     };
 
     Dataset create_dataset(string name_file);
+    
+    Affine2d v2t(Vector3d pose);
+    
+    Vector3d t2v(Affine2d t);
+
 }

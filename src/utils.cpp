@@ -50,4 +50,17 @@ namespace utils{
         return dataset;
     }
 
+    Affine2d v2t(Vector3d pose)
+    {
+        Affine2d t = Affine2d::Identity();
+        t.translation() = Vector2d(pose[0], pose[1]);
+        t.rotate(pose[2]);
+        return t;
+    }
+    Vector3d t2v(Affine2d t)
+    {
+        Vector2d translation = t.translation();
+        double angle = Rotation2Dd(t.rotation()).angle();
+        return Vector3d(translation[0], translation[1], angle);
+    }
 }

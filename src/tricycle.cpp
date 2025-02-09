@@ -3,13 +3,11 @@
 Tricycle::Tricycle(double timestamp, 
                    uint32_t tick_steer,
                    uint32_t tick_traction,
-                   Vector3d position,
-                   double orientation):
+                   Vector3d pose):
     _timestamp(timestamp),
     _tick_steer(tick_steer),
     _tick_traction(tick_traction),
-    _position(position),
-    _orientation(orientation){}
+    _pose(pose){}
 
 
 double Tricycle::get_timestamp()
@@ -27,14 +25,9 @@ uint32_t Tricycle::get_tick_traction()
     return _tick_traction;
 }
 
-Vector3d Tricycle::get_position()
+Vector3d Tricycle::get_pose()
 {
-    return _position;
-}
-
-double Tricycle::get_orientation()
-{
-    return _orientation;
+    return _pose;
 }
 
 double Tricycle::get_steering_angle()
@@ -90,13 +83,14 @@ double Tricycle::encoder_to_meters(uint32_t tick, uint32_t next_tick)
     return 2*M_PI / _max_traction * delta_ticks * _k_traction;
 }
 
+
+
 void Tricycle::write_tricycle_pose(std::string name_file)
 {
     std::ofstream pose_file(name_file, std::ofstream::out | std::ofstream::app);
     ASSERT(pose_file.is_open(), "Unable to open writing file!");
-    Vector3d position = get_position();
-    double orientation = get_orientation();
-    pose_file << position.x() << ' ' << position.y() << ' ' << orientation << std::endl;
+    Vector3d pose = get_pose();
+    pose_file << pose[0] << ' ' << pose[1] << ' ' << pose[2] << std::endl;
     pose_file.close();
 }
 
@@ -116,8 +110,7 @@ void Tricycle::step(uint32_t next_tick_traction, uint32_t actual_tick_steer)
     double dx = s * cos(_steering_angle) * cos(dtheta);
     double dy = s * cos(_steering_angle) * sin(dtheta);
 
-    _orientation += dtheta;
-    _position += Vector3d(dx, dy, 0.f);
+    _pose += Vector3d(dx, dy, dtheta);
 
     _tick_traction = next_tick_traction;
     write_tricycle_pose(std::string("example.txt"));
