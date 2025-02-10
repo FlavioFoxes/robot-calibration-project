@@ -31,12 +31,19 @@ int main(){
 	// std::cout << t.matrix() << std::endl;
 	// std::cout << "...............\n";
 
+
+
+	// --------------------------
+	// 			  MAIN
+	// --------------------------
+
+	utils::Dataset dataset = utils::create_dataset(std::string("dataset/dataset.txt"));
+
 	// Take initial information to create tricycle
-	// double timestamp = dataset.time[80];
-	// uint32_t tick_s = dataset.ticks_steer[80];
-	// uint32_t tick_t = dataset.ticks_traction[80];
-	// Vector3f model_pose(dataset.model_pose_x[80], dataset.model_pose_y[80], 0.f);
-	// float theta(dataset.model_pose_theta[80]);
+	double timestamp = dataset.time[0];
+	uint32_t tick_s = dataset.ticks_steer[0];
+	uint32_t tick_t = dataset.ticks_traction[0];
+	Vector3d model_pose(dataset.model_pose_x[0], dataset.model_pose_y[0], dataset.model_pose_theta[0]);
 
 	// // Take initial information to create tricycle
 	// double timestamp = 1668091584.821040869;
@@ -45,21 +52,15 @@ int main(){
 	// Vector3d model_pose(0.d, 0.d, 0.d);
 	// double theta(0.d);
 
-	// // std::cout << tick_t << "\n";
-	// // Create tricycle with starting information
-	// Tricycle tricycle = Tricycle(timestamp, 
-	// 							tick_s, 
-	// 							tick_t, 
-	// 							model_pose,
-	// 							theta);
+	// Create tricycle with starting information
+	Tricycle tricycle = Tricycle(timestamp, 
+								tick_s, 
+								tick_t, 
+								model_pose);
 
-	// // uint32_t next_tick = 526;
-	// // tricycle.step(next_tick, tick_s);
-
-		
-	// for(int i=0; i<dataset.time.size()-1; ++i){
-	// 	uint32_t actual_tick_steer = dataset.ticks_steer[i];
-	// 	uint32_t next_tick_t = dataset.ticks_traction[i+1];
-	// 	tricycle.step(next_tick_t, actual_tick_steer);
-	// }
+	for(int i=0; i<dataset.time.size()-1; ++i){
+		uint32_t actual_tick_steer = dataset.ticks_steer[i];
+		uint32_t next_tick_t = dataset.ticks_traction[i+1];
+		tricycle.step(next_tick_t, actual_tick_steer);
+	}
 }

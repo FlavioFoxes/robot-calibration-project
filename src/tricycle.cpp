@@ -63,24 +63,22 @@ uint16_t Tricycle::get_max_traction()
 // protected
 double Tricycle::encoder_to_angle(uint32_t tick)
 {
-    int64_t t = (tick > _max_steer / 2) ? (int64_t) tick - _max_steer : tick;
+    int64_t t = (tick > _max_steer / 2) ? (int64_t) tick - _max_steer : (int64_t) tick;
     return 2 * M_PI / _max_steer * t * _k_steer;
 }
 
 // protected
 double Tricycle::encoder_to_meters(uint32_t tick, uint32_t next_tick)
 {
+    std::cout << "tick:     " << tick << std::endl;
     // Delta ticks between two consecutive timestamps
     int64_t delta_ticks = ((int64_t) next_tick - (int64_t) tick); 
+    // std::cout << "delta ticks:      " << delta_ticks << std::endl;   // SEEMS TO WORK
     // Managing overflow
     if(delta_ticks < -100000){
         delta_ticks += UINT32_MAX;
     }
-
-    std::cout << "delta:    " << delta_ticks << std::endl;
-
-    // std::cout << delta_ticks << "\n";
-    return 2*M_PI / _max_traction * delta_ticks * _k_traction;
+    return  delta_ticks * _k_traction / _max_traction;
 }
 
 
@@ -105,12 +103,15 @@ void Tricycle::step(uint32_t next_tick_traction, uint32_t actual_tick_steer)
     double s = encoder_to_meters(_tick_traction, next_tick_traction);
 
     double dtheta = s * sin(_steering_angle) / _baseline;
-    std::cout << "steer:    " << _steering_angle << std::endl;
-    std::cout << "s:        " << s << std::endl;
     double dx = s * cos(_steering_angle) * cos(dtheta);
     double dy = s * cos(_steering_angle) * sin(dtheta);
 
-    _pose += Vector3d(dx, dy, dtheta);
+    Vector3d d_pose = Vector3d(dx, dy, dtheta);
+
+    Vector3d next_pose = utils::t2v( utils::v2t(_pose)*utils::v2t(d_pose) );
+    _pose = next_pose;
+
+    // _pose += Vector3d(dx, dy, dtheta);
 
     _tick_traction = next_tick_traction;
     write_tricycle_pose(std::string("example.txt"));

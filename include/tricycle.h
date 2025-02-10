@@ -10,16 +10,16 @@ class Tricycle{
         double   _timestamp;
         uint32_t _tick_steer;
         uint32_t _tick_traction;
-        Vector3d _pose;         // kc_x, kc_y, theta
-        double    _steering_angle;      // delta
+        Vector3d _pose;                 // kc_x, kc_y, theta
+        double   _steering_angle;       // delta
 
         float _k_steer = 0.1;
         float _k_traction = 0.0106141;
         float _baseline = 1.4;
         float _steer_offset = 0;
 
-        uint16_t _max_steer = 8192;
-        uint16_t _max_traction = 5000;
+        const uint16_t _max_steer = 8192;
+        const uint16_t _max_traction = 5000;
 
         // TODO: aggiungi posizioni/rotazioni tra sensore e kc    
 
