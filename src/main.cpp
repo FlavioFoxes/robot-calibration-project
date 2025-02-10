@@ -10,33 +10,11 @@ using namespace Eigen;
 
 int main(){
 
-	// uint32_t a = 4294959605;
-	// uint32_t t = 4294859756;
-	// uint32_t f = 526;
-
-	// double result = (double) f - (double) a;
-	// std::cout << f-a << std::endl;
-	
-	
-	
-	// // Transformation matrix
-	// Affine2d t = Affine2d::Identity();
-
-	// double angle = double(M_PI_2);
-	// // ERRORE
-    // // Aggiungiamo una traslazione
-    // t.translation() = Vector2d(1.0, 2.0);
-	// // t.rotation() = Rotation2D(angle);
-	// t.rotate(angle);
-	// std::cout << t.matrix() << std::endl;
-	// std::cout << "...............\n";
-
-
-
 	// --------------------------
 	// 			  MAIN
 	// --------------------------
 
+	// Create dataset from dataset file
 	utils::Dataset dataset = utils::create_dataset(std::string("dataset/dataset.txt"));
 
 	// Take initial information to create tricycle
@@ -58,9 +36,12 @@ int main(){
 								tick_t, 
 								model_pose);
 
+	// Simulation loop
 	for(int i=0; i<dataset.time.size()-1; ++i){
 		uint32_t actual_tick_steer = dataset.ticks_steer[i];
 		uint32_t next_tick_t = dataset.ticks_traction[i+1];
 		tricycle.step(next_tick_t, actual_tick_steer);
 	}
+
+
 }

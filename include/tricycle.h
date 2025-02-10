@@ -11,6 +11,7 @@ class Tricycle{
         uint32_t _tick_steer;
         uint32_t _tick_traction;
         Vector3d _pose;                 // kc_x, kc_y, theta
+        Vector3d _sensor_pose;
         double   _steering_angle;       // delta
 
         float _k_steer = 0.1;
@@ -21,7 +22,8 @@ class Tricycle{
         const uint16_t _max_steer = 8192;
         const uint16_t _max_traction = 5000;
 
-        // TODO: aggiungi posizioni/rotazioni tra sensore e kc    
+        Vector3d _sensor_pose_rel = Vector3d(1.5, 0.0, 0.0);    // x,y,theta w.r.t. baselink
+                                                                // It can be converted using v2t
 
         // Pass from encoder readers to measures
         double encoder_to_angle(uint32_t tick);
@@ -41,7 +43,7 @@ class Tricycle{
         uint32_t get_tick_steer();
         uint32_t get_tick_traction();
         Vector3d get_pose();  // kc_x, kc_y, 0
-        double    get_steering_angle();  // delta
+        double   get_steering_angle();  // delta
         float    get_k_steer();
         float    get_k_traction();
         float    get_baseline();
@@ -50,5 +52,5 @@ class Tricycle{
         
         // Step function (ODE)
         void step(uint32_t next_tick_traction, uint32_t tick_steer);
-        void write_tricycle_pose(std::string name_file);
+
 };

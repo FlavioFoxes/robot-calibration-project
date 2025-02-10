@@ -50,6 +50,14 @@ namespace utils{
         return dataset;
     }
 
+    void write_pose(std::string name_file, Vector3d pose)
+    {
+        std::ofstream pose_file(name_file, std::ofstream::out | std::ofstream::app);
+        ASSERT(pose_file.is_open(), "Unable to open writing file!");
+        pose_file << pose[0] << ' ' << pose[1] << ' ' << pose[2] << std::endl;
+        pose_file.close();
+    }
+
     Affine2d v2t(Vector3d pose)
     {
         Affine2d t = Affine2d::Identity();

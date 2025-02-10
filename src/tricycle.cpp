@@ -70,26 +70,13 @@ double Tricycle::encoder_to_angle(uint32_t tick)
 // protected
 double Tricycle::encoder_to_meters(uint32_t tick, uint32_t next_tick)
 {
-    std::cout << "tick:     " << tick << std::endl;
     // Delta ticks between two consecutive timestamps
     int64_t delta_ticks = ((int64_t) next_tick - (int64_t) tick); 
-    // std::cout << "delta ticks:      " << delta_ticks << std::endl;   // SEEMS TO WORK
     // Managing overflow
     if(delta_ticks < -100000){
         delta_ticks += UINT32_MAX;
     }
     return  delta_ticks * _k_traction / _max_traction;
-}
-
-
-
-void Tricycle::write_tricycle_pose(std::string name_file)
-{
-    std::ofstream pose_file(name_file, std::ofstream::out | std::ofstream::app);
-    ASSERT(pose_file.is_open(), "Unable to open writing file!");
-    Vector3d pose = get_pose();
-    pose_file << pose[0] << ' ' << pose[1] << ' ' << pose[2] << std::endl;
-    pose_file.close();
 }
 
 // Step function
@@ -98,7 +85,7 @@ void Tricycle::step(uint32_t next_tick_traction, uint32_t actual_tick_steer)
     // Impose actual steering tick
     _tick_steer = actual_tick_steer;
     // Steering angle
-    _steering_angle = encoder_to_angle(_tick_steer);
+    _steering_angle = encoder_to_angle(_tick_steer) + _steer_offset;
     // Total distance
     double s = encoder_to_meters(_tick_traction, next_tick_traction);
 
@@ -106,14 +93,22 @@ void Tricycle::step(uint32_t next_tick_traction, uint32_t actual_tick_steer)
     double dx = s * cos(_steering_angle) * cos(dtheta);
     double dy = s * cos(_steering_angle) * sin(dtheta);
 
+    // Next pose of KC is the product of the actual pose (w.r.t. world frame) and the movement
     Vector3d d_pose = Vector3d(dx, dy, dtheta);
-
     Vector3d next_pose = utils::t2v( utils::v2t(_pose)*utils::v2t(d_pose) );
+    
+    // Actual pose is the next one
     _pose = next_pose;
 
-    // _pose += Vector3d(dx, dy, dtheta);
+    // Sensor pose (w.r.t. World frame) is the product of the pose of the KC and the relative pose of sensor
+    Vector3d sensor_pose = utils::t2v( utils::v2t(_pose)*utils::v2t(_sensor_pose_rel) );
+    _sensor_pose = sensor_pose;
 
+    // Actual traction tick is the next one
     _tick_traction = next_tick_traction;
-    write_tricycle_pose(std::string("example.txt"));
+
+    // Write in the file actual pose
+    utils::write_pose(std::string("trajectories/model_pose_uncalibrated.txt"), _pose);
+    utils::write_pose(std::string("trajectories/tracker_pose_uncalibrated.txt"), _sensor_pose);
 
 }

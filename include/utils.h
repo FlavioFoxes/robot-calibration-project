@@ -36,6 +36,8 @@ namespace utils{
     };
 
     Dataset create_dataset(string name_file);
+    void write_pose(std::string name_file, Vector3d pose);
+
     
     Affine2d v2t(Vector3d pose);
     
