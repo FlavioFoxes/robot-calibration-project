@@ -1,15 +1,24 @@
 #include <iostream>
 #include <Eigen/Geometry>
 #include <cmath> 
+#include <cfloat>
 #include "utils.h"
 #include "tricycle.h"
-#include <cfloat>
 
 using Eigen::MatrixXd;
 using namespace Eigen;
 
 int main(){
 
+	
+	std::tuple<double, Vector3d, Vector3d> tupla;
+	double a = 5.0;
+	Vector3d v1 = Vector3d(1,2,3);
+	Vector3d v2 = Vector3d(5,6,7);
+	
+	tupla = std::make_tuple(a, v1, v2);
+	std::cout << std::get<2>(tupla) << std::endl;
+	/*
 	// --------------------------
 	// 			  MAIN
 	// --------------------------
@@ -28,7 +37,6 @@ int main(){
 	// uint32_t tick_s = 290;
 	// uint32_t tick_t = 4294859756;
 	// Vector3d model_pose(0.d, 0.d, 0.d);
-	// double theta(0.d);
 
 	// Create tricycle with starting information
 	Tricycle tricycle = Tricycle(timestamp, 
@@ -37,11 +45,19 @@ int main(){
 								model_pose);
 
 	// Simulation loop
+	// For each measurement
 	for(int i=0; i<dataset.time.size()-1; ++i){
+		// Take encoder measurements
 		uint32_t actual_tick_steer = dataset.ticks_steer[i];
 		uint32_t next_tick_t = dataset.ticks_traction[i+1];
+		// Move tricycle of one step
 		tricycle.step(next_tick_t, actual_tick_steer);
+		
+	// 	// Compute error between tricycle sensor pose and tracker pose
+	// 	Vector3d error = LS::compute_error(tricycle, 
+	// 									   Vector3d(dataset.tracker_pose_x[i], dataset.tracker_pose_y[i], dataset.tracker_pose_theta[i]));
+
 	}
-
-
+	*/	
+	
 }

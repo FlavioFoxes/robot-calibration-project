@@ -35,17 +35,22 @@ double Tricycle::get_steering_angle()
     return _steering_angle;
 }
 
-float Tricycle::get_k_steer()
+double Tricycle::get_steer_offset()
+{
+    return _steer_offset;
+}
+
+double Tricycle::get_k_steer()
 {
     return _k_steer;
 }
 
-float Tricycle::get_k_traction()
+double Tricycle::get_k_traction()
 {
     return _k_traction;
 }
 
-float Tricycle::get_baseline()
+double Tricycle::get_baseline()
 {
     return _baseline;
 }
@@ -58,6 +63,16 @@ uint16_t Tricycle::get_max_steer()
 uint16_t Tricycle::get_max_traction()
 {
     return _max_traction;
+}
+
+Vector3d Tricycle::get_sensor_pose()
+{
+    return _sensor_pose;
+}
+
+std::vector<double> Tricycle::get_parameters_to_calibrate()
+{
+    return std::vector<double>(_k_steer, _k_traction, _steer_offset, _baseline, (double)_sensor_pose_rel, (double)_sensor_pose_rel[1], (double)_sensor_pose_rel[2]);
 }
 
 // protected
@@ -80,35 +95,54 @@ double Tricycle::encoder_to_meters(uint32_t tick, uint32_t next_tick)
 }
 
 // Step function
+// Make the tricycle forward of one step
 void Tricycle::step(uint32_t next_tick_traction, uint32_t actual_tick_steer)
 {
+    std::tuple<double, Vector3d, Vector3d> tuple = predict(_k_steer, _k_traction, _baseline, _steer_offset,_sensor_pose_rel, _tick_traction, next_tick_traction, actual_tick_steer);
+    double steering_angle = std::get<0>(tuple);
+    Vector3d next_pose = std::get<1>(tuple);
+    Vector3d sensor_pose = std::get<2>(tuple);
+
     // Impose actual steering tick
     _tick_steer = actual_tick_steer;
-    // Steering angle
-    _steering_angle = encoder_to_angle(_tick_steer) + _steer_offset;
-    // Total distance
-    double s = encoder_to_meters(_tick_traction, next_tick_traction);
+    _tick_traction = next_tick_traction;
 
-    double dtheta = s * sin(_steering_angle) / _baseline;
-    double dx = s * cos(_steering_angle) * cos(dtheta);
-    double dy = s * cos(_steering_angle) * sin(dtheta);
+    // Assign steering angle
+    _steering_angle = steering_angle;
+    // Assign model pose and sensor pose
+    _pose = next_pose;
+    _sensor_pose = sensor_pose;
+
+    // Actual traction tick is the next one
+
+    // // Save in file actual model pose and actual sensor pose
+    // utils::write_pose(std::string("trajectories/model_pose_uncalibrated.txt"), _pose);
+    // utils::write_pose(std::string("trajectories/tracker_pose_uncalibrated.txt"), _sensor_pose);
+
+}
+
+std::tuple<double, Vector3d, Vector3d> Tricycle::predict(double k_steer, 
+                                                         double k_traction, 
+                                                         double baseline, 
+                                                         double steer_offset, 
+                                                         Vector3d sensor_pose_rel, 
+                                                         uint32_t tick_traction,
+                                                         uint32_t next_tick_traction, 
+                                                         uint32_t tick_steer)
+{
+    double steering_angle = encoder_to_angle(tick_steer) + steer_offset;
+    // Total distance
+    double s = encoder_to_meters(tick_traction, next_tick_traction);
+
+    double dtheta = s * sin(steering_angle) / baseline;
+    double dx = s * cos(steering_angle) * cos(dtheta);
+    double dy = s * cos(steering_angle) * sin(dtheta);
 
     // Next pose of KC is the product of the actual pose (w.r.t. world frame) and the movement
     Vector3d d_pose = Vector3d(dx, dy, dtheta);
     Vector3d next_pose = utils::t2v( utils::v2t(_pose)*utils::v2t(d_pose) );
-    
-    // Actual pose is the next one
-    _pose = next_pose;
-
     // Sensor pose (w.r.t. World frame) is the product of the pose of the KC and the relative pose of sensor
-    Vector3d sensor_pose = utils::t2v( utils::v2t(_pose)*utils::v2t(_sensor_pose_rel) );
-    _sensor_pose = sensor_pose;
-
-    // Actual traction tick is the next one
-    _tick_traction = next_tick_traction;
-
-    // Write in the file actual pose
-    utils::write_pose(std::string("trajectories/model_pose_uncalibrated.txt"), _pose);
-    utils::write_pose(std::string("trajectories/tracker_pose_uncalibrated.txt"), _sensor_pose);
-
+    Vector3d sensor_pose = utils::t2v( utils::v2t(_pose)*utils::v2t(sensor_pose_rel) );
+    
+    return std::tuple<double, Vector3d, Vector3d>(steering_angle, next_pose, sensor_pose);
 }
