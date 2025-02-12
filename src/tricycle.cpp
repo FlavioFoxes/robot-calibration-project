@@ -72,18 +72,22 @@ Vector3d Tricycle::get_sensor_pose()
 
 std::vector<double> Tricycle::get_parameters_to_calibrate()
 {
-    return std::vector<double>(_k_steer, _k_traction, _steer_offset, _baseline, (double)_sensor_pose_rel, (double)_sensor_pose_rel[1], (double)_sensor_pose_rel[2]);
+    double sensor_x = _sensor_pose_rel[0];
+    double sensor_y = _sensor_pose_rel[1];
+    double sensor_theta = _sensor_pose_rel[2];
+    
+    return std::vector<double>{_k_steer, _k_traction, _steer_offset, _baseline, sensor_x, sensor_y, sensor_theta};
 }
 
 // protected
-double Tricycle::encoder_to_angle(uint32_t tick)
+double Tricycle::encoder_to_angle(double k_steer, uint32_t tick)
 {
     int64_t t = (tick > _max_steer / 2) ? (int64_t) tick - _max_steer : (int64_t) tick;
-    return 2 * M_PI / _max_steer * t * _k_steer;
+    return 2 * M_PI / _max_steer * t * k_steer;
 }
 
 // protected
-double Tricycle::encoder_to_meters(uint32_t tick, uint32_t next_tick)
+double Tricycle::encoder_to_meters(double k_traction, uint32_t tick, uint32_t next_tick)
 {
     // Delta ticks between two consecutive timestamps
     int64_t delta_ticks = ((int64_t) next_tick - (int64_t) tick); 
@@ -91,14 +95,14 @@ double Tricycle::encoder_to_meters(uint32_t tick, uint32_t next_tick)
     if(delta_ticks < -100000){
         delta_ticks += UINT32_MAX;
     }
-    return  delta_ticks * _k_traction / _max_traction;
+    return  delta_ticks * k_traction / _max_traction;
 }
 
 // Step function
 // Make the tricycle forward of one step
 void Tricycle::step(uint32_t next_tick_traction, uint32_t actual_tick_steer)
 {
-    std::tuple<double, Vector3d, Vector3d> tuple = predict(_k_steer, _k_traction, _baseline, _steer_offset,_sensor_pose_rel, _tick_traction, next_tick_traction, actual_tick_steer);
+    std::tuple<double, Vector3d, Vector3d> tuple = predict(get_parameters_to_calibrate(), _tick_traction, next_tick_traction, actual_tick_steer);
     double steering_angle = std::get<0>(tuple);
     Vector3d next_pose = std::get<1>(tuple);
     Vector3d sensor_pose = std::get<2>(tuple);
@@ -121,18 +125,20 @@ void Tricycle::step(uint32_t next_tick_traction, uint32_t actual_tick_steer)
 
 }
 
-std::tuple<double, Vector3d, Vector3d> Tricycle::predict(double k_steer, 
-                                                         double k_traction, 
-                                                         double baseline, 
-                                                         double steer_offset, 
-                                                         Vector3d sensor_pose_rel, 
+std::tuple<double, Vector3d, Vector3d> Tricycle::predict(std::vector<double> parameters,
                                                          uint32_t tick_traction,
                                                          uint32_t next_tick_traction, 
                                                          uint32_t tick_steer)
 {
-    double steering_angle = encoder_to_angle(tick_steer) + steer_offset;
+    double k_steer = parameters[0];
+    double k_traction = parameters[1];
+    double steer_offset = parameters[2];
+    double baseline = parameters[3];
+    Vector3d sensor_pose_rel = Vector3d(parameters[4], parameters[5], parameters[6]);
+
+    double steering_angle = encoder_to_angle(k_steer, tick_steer) + steer_offset;
     // Total distance
-    double s = encoder_to_meters(tick_traction, next_tick_traction);
+    double s = encoder_to_meters(k_traction, tick_traction, next_tick_traction);
 
     double dtheta = s * sin(steering_angle) / baseline;
     double dx = s * cos(steering_angle) * cos(dtheta);
@@ -143,6 +149,6 @@ std::tuple<double, Vector3d, Vector3d> Tricycle::predict(double k_steer,
     Vector3d next_pose = utils::t2v( utils::v2t(_pose)*utils::v2t(d_pose) );
     // Sensor pose (w.r.t. World frame) is the product of the pose of the KC and the relative pose of sensor
     Vector3d sensor_pose = utils::t2v( utils::v2t(_pose)*utils::v2t(sensor_pose_rel) );
-    
+
     return std::tuple<double, Vector3d, Vector3d>(steering_angle, next_pose, sensor_pose);
 }

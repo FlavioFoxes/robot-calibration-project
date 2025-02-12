@@ -26,8 +26,8 @@ class Tricycle{
                                                                 // It can be converted using v2t
 
         // Pass from encoder readers to measures
-        double encoder_to_angle(uint32_t tick);
-        double encoder_to_meters(uint32_t tick, uint32_t next_tick);
+        double encoder_to_angle(double k_steer, uint32_t tick);
+        double encoder_to_meters(double k_traction, uint32_t tick, uint32_t next_tick);
 
 
     public:
@@ -61,11 +61,8 @@ class Tricycle{
         void step(uint32_t next_tick_traction, uint32_t tick_steer);
         
         // Predict function (ODE)
-        std::tuple<double, Vector3d, Vector3d> predict(double k_steer,
-                                                       double k_traction,
-                                                       double baseline,
-                                                       double steer_offset,
-                                                       Vector3d sensor_pose_rel,
+        // Argument "parameters" are parameters to calibrate in vector format    
+        std::tuple<double, Vector3d, Vector3d> predict(std::vector<double> parameters,
                                                        uint32_t tick_traction,
                                                        uint32_t next_tick_traction, 
                                                        uint32_t tick_steer);

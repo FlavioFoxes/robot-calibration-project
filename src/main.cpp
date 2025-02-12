@@ -11,14 +11,6 @@ using namespace Eigen;
 int main(){
 
 	
-	std::tuple<double, Vector3d, Vector3d> tupla;
-	double a = 5.0;
-	Vector3d v1 = Vector3d(1,2,3);
-	Vector3d v2 = Vector3d(5,6,7);
-	
-	tupla = std::make_tuple(a, v1, v2);
-	std::cout << std::get<2>(tupla) << std::endl;
-	/*
 	// --------------------------
 	// 			  MAIN
 	// --------------------------
@@ -39,12 +31,16 @@ int main(){
 	// Vector3d model_pose(0.d, 0.d, 0.d);
 
 	// Create tricycle with starting information
-	Tricycle tricycle = Tricycle(timestamp, 
-								tick_s, 
-								tick_t, 
-								model_pose);
+	Tricycle tricycle = Tricycle(timestamp,
+								 tick_s,
+								 tick_t,
+								 model_pose);
 
 	// Simulation loop
+
+	// TODO: add H matrix where to sum J^T * J
+	//	 	 add b matrix where to sum J^T * e
+	
 	// For each measurement
 	for(int i=0; i<dataset.time.size()-1; ++i){
 		// Take encoder measurements
@@ -53,11 +49,12 @@ int main(){
 		// Move tricycle of one step
 		tricycle.step(next_tick_t, actual_tick_steer);
 		
-	// 	// Compute error between tricycle sensor pose and tracker pose
-	// 	Vector3d error = LS::compute_error(tricycle, 
-	// 									   Vector3d(dataset.tracker_pose_x[i], dataset.tracker_pose_y[i], dataset.tracker_pose_theta[i]));
+		// Compute error between tricycle sensor pose and tracker pose
+		// Vector3d error = LS::compute_error(tricycle, 
+		// 								   Vector3d(dataset.tracker_pose_x[i], dataset.tracker_pose_y[i], dataset.tracker_pose_theta[i]));
+		// LS::compute_numeric_jacobian(tricycle, )
+
 
 	}
-	*/	
 	
 }
