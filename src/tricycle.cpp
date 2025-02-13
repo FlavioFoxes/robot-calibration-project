@@ -100,16 +100,16 @@ double Tricycle::encoder_to_meters(double k_traction, uint32_t tick, uint32_t ne
 
 // Step function
 // Make the tricycle forward of one step
-void Tricycle::step(uint32_t next_tick_traction, uint32_t actual_tick_steer)
+void Tricycle::step(uint32_t actual_tick_traction, uint32_t next_tick_traction, uint32_t actual_tick_steer)
 {
-    std::tuple<double, Vector3d, Vector3d> tuple = predict(get_parameters_to_calibrate(), _tick_traction, next_tick_traction, actual_tick_steer);
+    std::tuple<double, Vector3d, Vector3d> tuple = predict(get_parameters_to_calibrate(), actual_tick_traction, next_tick_traction, actual_tick_steer);
     double steering_angle = std::get<0>(tuple);
     Vector3d next_pose = std::get<1>(tuple);
     Vector3d sensor_pose = std::get<2>(tuple);
 
     // Impose actual steering tick
     _tick_steer = actual_tick_steer;
-    _tick_traction = next_tick_traction;
+    _tick_traction = actual_tick_traction;
 
     // Assign steering angle
     _steering_angle = steering_angle;
@@ -122,7 +122,7 @@ void Tricycle::step(uint32_t next_tick_traction, uint32_t actual_tick_steer)
     // // Save in file actual model pose and actual sensor pose
     // utils::write_pose(std::string("trajectories/model_pose_uncalibrated.txt"), _pose);
     // utils::write_pose(std::string("trajectories/tracker_pose_uncalibrated.txt"), _sensor_pose);
-
+  
 }
 
 std::tuple<double, Vector3d, Vector3d> Tricycle::predict(std::vector<double> parameters,

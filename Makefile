@@ -5,10 +5,10 @@ CFLAGS=-I$(IDIR)
 ODIR=obj
 LDIR =lib
 
-_DEPS = utils.h tricycle.h
+_DEPS = utils.h tricycle.h leastSquares.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = utils.o tricycle.o main.o 
+_OBJ = utils.o leastSquares.o tricycle.o main.o 
 OBJ = $(patsubst %, $(ODIR)/% ,$(_OBJ))
 
 SRCDIR = src

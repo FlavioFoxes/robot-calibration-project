@@ -58,7 +58,7 @@ class Tricycle{
         
         // Step function (ODE). 
         // Recalls predict function and assign outputs to protected variables inside the class
-        void step(uint32_t next_tick_traction, uint32_t tick_steer);
+        void step(uint32_t actual_tick_traction, uint32_t next_tick_traction, uint32_t tick_steer);
         
         // Predict function (ODE)
         // Argument "parameters" are parameters to calibrate in vector format    

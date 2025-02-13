@@ -3,13 +3,17 @@
 #include <cmath> 
 #include <cfloat>
 #include "utils.h"
-#include "tricycle.h"
+#include "leastSquares.h"
+// #include "tricycle.h"
 
 using Eigen::MatrixXd;
 using namespace Eigen;
 
 int main(){
 
+	// MatrixXd H(3,7);
+	// H.col(2) = Vector3d(1, 1, 1);
+	// std::cout << H << std::endl;
 	
 	// --------------------------
 	// 			  MAIN
@@ -40,21 +44,33 @@ int main(){
 
 	// TODO: add H matrix where to sum J^T * J
 	//	 	 add b matrix where to sum J^T * e
-	
+	// J has dimension 3x7
+	MatrixXd H(7,7);
+	H.setZero();
+	VectorXd b(7);
+	b.setZero();
+
 	// For each measurement
 	for(int i=0; i<dataset.time.size()-1; ++i){
 		// Take encoder measurements
 		uint32_t actual_tick_steer = dataset.ticks_steer[i];
-		uint32_t next_tick_t = dataset.ticks_traction[i+1];
+		uint32_t actual_tick_traction = dataset.ticks_traction[i];
+		uint32_t next_tick_traction = dataset.ticks_traction[i+1];
 		// Move tricycle of one step
-		tricycle.step(next_tick_t, actual_tick_steer);
-		
+		// tricycle.predict(tricycle.get_parameters_to_calibrate(),
+		// 				 actual_tick_traction,
+		// 				 next_tick_traction, 
+		// 				 actual_tick_steer);
+		tricycle.step(actual_tick_traction, next_tick_traction, actual_tick_steer);
 		// Compute error between tricycle sensor pose and tracker pose
-		// Vector3d error = LS::compute_error(tricycle, 
-		// 								   Vector3d(dataset.tracker_pose_x[i], dataset.tracker_pose_y[i], dataset.tracker_pose_theta[i]));
-		// LS::compute_numeric_jacobian(tricycle, )
+		Vector3d error = LS::compute_error(tricycle, 
+										   Vector3d(dataset.tracker_pose_x[i], dataset.tracker_pose_y[i], dataset.tracker_pose_theta[i]));
+		MatrixXd J = LS::compute_numeric_jacobian(tricycle, actual_tick_traction, next_tick_traction, actual_tick_steer);
 
-
+		H += J.transpose() * J;
+		b += J.transpose() * error;
 	}
-	
+	auto dx = -H.completeOrthogonalDecomposition().pseudoInverse() * b;
+	std::cout << dx << std::endl;
+
 }
