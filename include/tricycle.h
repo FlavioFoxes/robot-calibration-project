@@ -22,7 +22,7 @@ class Tricycle{
         const uint16_t _max_steer = 8192;
         const uint16_t _max_traction = 5000;
 
-        Vector3d _sensor_pose_rel = Vector3d(1.5, 0.0, 0.0);    // x,y,theta w.r.t. baselink
+        Vector3d _sensor_pose_rel = Vector3d(1.5, 0, 0);    // x,y,theta w.r.t. baselink
                                                                 // It can be converted using v2t
 
         // Pass from encoder readers to measures
@@ -52,13 +52,16 @@ class Tricycle{
         uint16_t  get_max_traction();
         Vector3d  get_sensor_pose();
 
+        void set_model_pose(Vector3d model_pose);
+        void set_calibrated_parameters(std::vector<double> parameters);
+
         // Get parameters to calibrate in a std::vector.
         // It is useful for numeric jacobian
         std::vector<double> get_parameters_to_calibrate();
         
         // Step function (ODE). 
         // Recalls predict function and assign outputs to protected variables inside the class
-        void step(uint32_t actual_tick_traction, uint32_t next_tick_traction, uint32_t tick_steer);
+        void step(uint32_t actual_tick_traction, uint32_t next_tick_traction, uint32_t tick_steer, bool isCalibrated);
         
         // Predict function (ODE)
         // Argument "parameters" are parameters to calibrate in vector format    

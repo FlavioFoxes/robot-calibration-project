@@ -23,7 +23,7 @@ namespace utils{
             stringstream s(line);
             string temp;
             s >> temp >> temp;
-            dataset.time.push_back(stod(temp)); // ERROR
+            dataset.time.push_back(stod(temp)); 
             
             s >> temp >> temp;
             dataset.ticks_steer.push_back(static_cast<uint32_t>(stoul(temp)));                
