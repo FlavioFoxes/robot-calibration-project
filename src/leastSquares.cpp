@@ -1,6 +1,6 @@
 #include "leastSquares.h"
 
-// TODO: calcola la differenza tramite prodotto di matrici omogenee
+// NOTE: differenza tramite prodotto di matrici omogenee
 Vector3d LS::compute_error(Tricycle tricycle, Vector3d tracker_pose)
 {
     return utils::t2v( utils::v2t(tricycle.get_sensor_pose()).inverse() * utils::v2t(tracker_pose) );
@@ -21,7 +21,7 @@ MatrixXd LS::compute_numeric_jacobian(Tricycle tricycle, uint32_t actual_tick_tr
         parameters_minus[i] -= epsilon;
 
 
-        // TODO: calcola la differenza tramite prodotto di matrici omogenee
+        // NOTE: differenza tramite prodotto di matrici omogenee
         Vector3d sensor_pose_plus = std::get<2>(tricycle.predict(parameters_plus,
                                                                  actual_tick_traction,
                                                                  next_tick_traction, 
@@ -32,11 +32,11 @@ MatrixXd LS::compute_numeric_jacobian(Tricycle tricycle, uint32_t actual_tick_tr
                                                                  next_tick_traction, 
                                                                  actual_tick_steer));
 
-        // Differenza matriciale
+        // NOTE: Differenza matriciale
         // Vector3d column = inv_eps2 * utils::t2v(utils::v2t(sensor_pose_plus).inverse() * utils::v2t(sensor_pose_minus));
         // J.col(i) = column;
 
-        // Differenza numerica
+        // NOTE: Differenza numerica
         J.col(i) = inv_eps2*(sensor_pose_plus - sensor_pose_minus);
     }
     // Parameters (pose) of the sensor w.r.t. robot
@@ -51,12 +51,28 @@ MatrixXd LS::compute_numeric_jacobian(Tricycle tricycle, uint32_t actual_tick_tr
         Vector3d sensor_pose_plus = utils::t2v(utils::v2t(sensor_pose) * utils::v2t(noise));
         Vector3d sensor_pose_minus = utils::t2v(utils::v2t(sensor_pose) * utils::v2t(-noise));
 
-        // Differenza matriciale
+        // NOTE: Differenza matriciale
         // Vector3d column = inv_eps2 * utils::t2v(utils::v2t(sensor_pose_plus).inverse() * utils::v2t(sensor_pose_minus));
         // J.col(i+4) = column;
 
-        // Differenza numerica
+        // NOTE: Differenza numerica
         J.col(i+4) = inv_eps2*(sensor_pose_plus - sensor_pose_minus);
     }
     return J;
 }
+
+/*
+    TODO: compute_analytical_jacobian
+    MatrixXd LS::compute_analytic_jacobian(Tricycle tricycle, 
+                                           uint32_t actual_tick_traction, 
+                                           uint32_t next_tick_traction, 
+                                           uint32_t actual_tick_steer)
+
+    La funzione deve calcolare la jacobiana della predict rispetto
+    a tutti i parametri che devo calibrare.
+    Visto che le equazioni ce le ho espresse in forma matriciale, 
+    posso usare matlab per ottenere direttamente la forma esplicita
+    e anche per calcolare la jacobiana.
+    Poi confronta con calcoli manuali (almeno di una)
+
+*/
