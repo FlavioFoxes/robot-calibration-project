@@ -32,7 +32,7 @@ int main(){
 								 tick_t,
 								 model_pose);
 
-	for(int j=0; j<10; ++j){
+	for(int j=0; j<30; ++j){
 
 		
 		// Initialize H and b matrices
@@ -59,12 +59,13 @@ int main(){
 			FIXME from here
 			*/
 
-			// Compute error between tricycle sensor pose and tracker pose	
+			// Compute error between tricycle sensor pose and tracker pose
+			Vector3d tracker_pose = Vector3d(dataset.tracker_pose_x[i+1], dataset.tracker_pose_y[i+1], dataset.tracker_pose_theta[i+1]);	
 			Vector3d error = LS::compute_error(tricycle, //tricycle.get_sensor_pose());
-											Vector3d(dataset.tracker_pose_x[i+1], dataset.tracker_pose_y[i+1], dataset.tracker_pose_theta[i+1]));
+											   tracker_pose);
 			// std::cout << "----------JAC----------\n";
 			
-			MatrixXd J = LS::compute_numeric_jacobian(tricycle, tricycle_pose, actual_tick_traction, next_tick_traction, actual_tick_steer);
+			MatrixXd J = LS::compute_numeric_jacobian(tricycle, tricycle_pose, actual_tick_traction, next_tick_traction, actual_tick_steer, tracker_pose);
 
 			// std::cout << "Jacobian:		\n" << J << std::endl;
 			// assert(0); 
