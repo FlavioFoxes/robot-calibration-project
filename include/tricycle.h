@@ -51,6 +51,7 @@ class Tricycle{
         uint16_t  get_max_steer();
         uint16_t  get_max_traction();
         Vector3d  get_sensor_pose();
+        Vector3d  get_sensor_pose_rel();
 
         void set_model_pose(Vector3d model_pose);
         void set_calibrated_parameters(std::vector<double> parameters);
@@ -66,6 +67,7 @@ class Tricycle{
         // Predict function (ODE)
         // Argument "parameters" are parameters to calibrate in vector format    
         std::tuple<double, Vector3d, Vector3d> predict(std::vector<double> parameters,
+                                                       Vector3d pose,
                                                        uint32_t tick_traction,
                                                        uint32_t next_tick_traction, 
                                                        uint32_t tick_steer);
