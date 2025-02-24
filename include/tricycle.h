@@ -22,7 +22,7 @@ class Tricycle{
         const uint16_t _max_steer = 8192;
         const uint16_t _max_traction = 5000;
 
-        Vector3d _sensor_pose_rel = Vector3d(1.5, 0, 0);    // x,y,theta w.r.t. baselink
+        Vector3d _sensor_pose_rel = Vector3d(1.5, 0, 0);         // x,y,theta w.r.t. baselink
                                                                 // It can be converted using v2t
 
         // Pass from encoder readers to measures
@@ -36,7 +36,8 @@ class Tricycle{
         Tricycle(double timestamp, 
                  uint32_t tick_steer, 
                  uint32_t tick_traction, 
-                 Vector3d pose);
+                 Vector3d initial_model_pose,
+                 Vector3d initial_sensor_pose);
 
         // Getter information functions
         double    get_timestamp();
@@ -54,6 +55,7 @@ class Tricycle{
         Vector3d  get_sensor_pose_rel();
 
         void set_model_pose(Vector3d model_pose);
+        void set_sensor_pose(Vector3d sensor_pose);
         void set_calibrated_parameters(std::vector<double> parameters);
 
         // Get parameters to calibrate in a std::vector.
@@ -62,13 +64,13 @@ class Tricycle{
         
         // Step function (ODE). 
         // Recalls predict function and assign outputs to protected variables inside the class
-        void step(uint32_t actual_tick_traction, uint32_t next_tick_traction, uint32_t tick_steer, bool isCalibrated);
+        void step(Vector3d d_pose, bool isCalibrated);
         
         // Predict function (ODE)
         // Argument "parameters" are parameters to calibrate in vector format    
-        std::tuple<double, Vector3d, Vector3d> predict(std::vector<double> parameters,
-                                                       Vector3d pose,
-                                                       uint32_t tick_traction,
-                                                       uint32_t next_tick_traction, 
-                                                       uint32_t tick_steer);
+        std::tuple<double, Vector3d> predict(std::vector<double> parameters,
+                                             Vector3d pose,
+                                             uint32_t actual_tick_traction,
+                                             uint32_t next_tick_traction, 
+                                             uint32_t actual_tick_steer);
 };
