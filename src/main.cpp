@@ -25,13 +25,18 @@ int main(){
 	uint32_t tick_s = dataset.ticks_steer[0];
 	uint32_t tick_t = dataset.ticks_traction[0];
 	Vector3d initial_model_pose(dataset.model_pose_x[0], dataset.model_pose_y[0], dataset.model_pose_theta[0]);
-	Vector3d initial_sensor_pose = Vector3d(dataset.tracker_pose_x[0], dataset.tracker_pose_y[0], dataset.tracker_pose_theta[0]);
+	Vector3d initial_sensor_pose(dataset.tracker_pose_x[0], dataset.tracker_pose_y[0], dataset.tracker_pose_theta[0]);
 	
 	// Create tricycle with starting information
 	Tricycle tricycle = Tricycle(tick_s,
 								 tick_t,
 								 initial_model_pose,
 								 initial_sensor_pose);
+
+	// std::vector for storing robot trajectory with uncalibrated parameters
+	std::vector<Vector3d> robot_uncalibrated_trajectory{tricycle.get_pose()};
+	std::vector<Vector3d> sensor_uncalibrated_trajectory{tricycle.get_sensor_pose()};
+
 
 	// Calibration cycle multiple times
 	for(int j=0; j<5; ++j){
@@ -66,7 +71,11 @@ int main(){
 
 			// Apply displacement to the robot
 			tricycle.step(d_pose, false);
-			
+			// Save robot and sensor pose when parameters are not calibrated 
+			if(j==0){
+				robot_uncalibrated_trajectory.push_back(tricycle.get_pose());
+				sensor_uncalibrated_trajectory.push_back(tricycle.get_sensor_pose());
+			} 
 			
 			// Observation is the displacement between sensor measurements 
 			//  at i and i+1 timestamps (as affine transformation)
@@ -106,12 +115,18 @@ int main(){
 		tricycle.set_model_pose(initial_model_pose);
 		tricycle.set_sensor_pose(initial_sensor_pose);
 	}
-
+	// Write on file robot and sensor uncalibrated trajectories
+	utils::write_trajectory(std::string("trajectories/robot_trajectory_uncalibrated.txt"), robot_uncalibrated_trajectory);
+	utils::write_trajectory(std::string("trajectories/sensor_trajectory_uncalibrated.txt"), sensor_uncalibrated_trajectory);
 
 	// TEST
 	// Once parameters are calibrated, test using same dataset
-	for(int i=0; i<dataset.time.size()-1; ++i){
 
+	// std::vector for storing robot trajectory with calibrated parameters
+	std::vector<Vector3d> robot_calibrated_trajectory{tricycle.get_pose()};
+	std::vector<Vector3d> sensor_calibrated_trajectory{tricycle.get_sensor_pose()};
+
+	for(int i=0; i<dataset.time.size()-1; ++i){
 		// Take encoder measurements
 		uint32_t actual_tick_steer = dataset.ticks_steer[i];
 		uint32_t actual_tick_traction = dataset.ticks_traction[i];
@@ -125,6 +140,12 @@ int main(){
 										   actual_tick_steer);
 		// Apply displacement to the robot
 		tricycle.step(d_pose, true);
+		robot_calibrated_trajectory.push_back(tricycle.get_pose());
+		sensor_calibrated_trajectory.push_back(tricycle.get_sensor_pose());
 	}
 	
+	// Write on file robot and sensor calibrated trajectories
+	utils::write_trajectory(std::string("trajectories/robot_trajectory_calibrated.txt"), robot_calibrated_trajectory);
+	utils::write_trajectory(std::string("trajectories/sensor_trajectory_calibrated.txt"), sensor_calibrated_trajectory);
+
 }

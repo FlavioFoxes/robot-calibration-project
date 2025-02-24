@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 f = open("dataset/dataset.txt")
 
 lines = f.read().splitlines()

@@ -49,12 +49,14 @@ namespace utils{
         return dataset;
     }
 
-    void write_pose(std::string name_file, Vector3d pose)
+    void write_trajectory(std::string name_file, std::vector<Vector3d> trajectory)
     {
-        std::ofstream pose_file(name_file, std::ofstream::out | std::ofstream::app);
-        ASSERT(pose_file.is_open(), "Unable to open writing file!");
-        pose_file << pose[0] << ' ' << pose[1] << ' ' << pose[2] << std::endl;
-        pose_file.close();
+        std::ofstream trajectory_file(name_file, std::ofstream::out);
+        ASSERT(trajectory_file.is_open(), "Unable to open writing file!");
+        for(Vector3d pose: trajectory){
+            trajectory_file << pose[0] << ' ' << pose[1] << ' ' << pose[2] << std::endl;
+        }
+        trajectory_file.close();
     }
 
     Affine2d v2t(Vector3d pose)
@@ -64,7 +66,7 @@ namespace utils{
         t.rotate(pose[2]);
         return t;
     }
-    
+
     Vector3d t2v(Affine2d t)
     {
         Vector2d translation = t.translation();

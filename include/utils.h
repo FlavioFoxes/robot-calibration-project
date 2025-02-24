@@ -60,9 +60,9 @@ namespace utils{
     Dataset create_dataset(string name_file);
 
     /*
-    Write the pose in a file, for plotting through Python
+    Write the trajectory in a file, for plotting through Python
     */
-    void write_pose(std::string name_file, Vector3d pose);
+    void write_trajectory(std::string name_file, std::vector<Vector3d> trajectory);
 
     /*
     Vector-to-Transformation matrix function

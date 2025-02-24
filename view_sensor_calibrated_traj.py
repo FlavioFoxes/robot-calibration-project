@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 # Model pose estimation plot (not calibrated)
 # It is useful to estiamte if the estimated model is right
-f_estimated = open("trajectories/tracker_pose_calibrated.txt")
+f_estimated = open("trajectories/sensor_trajectory_calibrated.txt")
 lines_estimated = f_estimated.read().splitlines()
 x_model_estimated = []
 y_model_estimated = []
@@ -15,7 +15,7 @@ for l in lines_estimated:
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
-ax.scatter(x_model_estimated, y_model_estimated, marker=".")
+ax.scatter(x_model_estimated, y_model_estimated, marker=".", label='prediction')
 ax.axis("equal")
 
 f = open("dataset/dataset.txt")
@@ -46,7 +46,8 @@ for l in lines:
 x_np = np.asarray(x_tracker)
 y_np = np.asarray(y_tracker)
 
-ax.scatter(x_tracker, y_tracker, marker=".")
+ax.scatter(x_tracker, y_tracker, marker=".", label='tracker pose')
 # ax.scatter(x_model_pose, y_model_pose, marker=".")
 ax.axis("equal")
+ax.legend()
 plt.show()

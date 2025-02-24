@@ -133,18 +133,18 @@ void Tricycle::step(Vector3d d_pose, bool isCalibrated)
     _sensor_pose = sensor_pose;
 
     
-    if (!isCalibrated)  // If parameters are uncalibrated
-    {
-        // Save in file actual model pose and actual sensor pose
-        utils::write_pose(std::string("trajectories/model_pose_uncalibrated.txt"), _pose);
-        utils::write_pose(std::string("trajectories/tracker_pose_uncalibrated.txt"), _sensor_pose);
-    }
-    else 
-    {
-        // Save in file actual calibrated model pose and actual calibrated sensor pose
-        utils::write_pose(std::string("trajectories/model_pose_calibrated.txt"), _pose);
-        utils::write_pose(std::string("trajectories/tracker_pose_calibrated.txt"), _sensor_pose);
-    }
+    // if (!isCalibrated)  // If parameters are uncalibrated
+    // {
+    //     // Save in file actual model pose and actual sensor pose
+    //     utils::write_pose(std::string("trajectories/model_pose_uncalibrated.txt"), _pose);
+    //     utils::write_pose(std::string("trajectories/tracker_pose_uncalibrated.txt"), _sensor_pose);
+    // }
+    // else 
+    // {
+    //     // Save in file actual calibrated model pose and actual calibrated sensor pose
+    //     utils::write_pose(std::string("trajectories/model_pose_calibrated.txt"), _pose);
+    //     utils::write_pose(std::string("trajectories/tracker_pose_calibrated.txt"), _sensor_pose);
+    // }
 }
 
 Vector3d Tricycle::predict(std::vector<double> parameters,
