@@ -4,7 +4,6 @@
 
 namespace utils{
 
-    // Read the file name_file
     Dataset create_dataset(string name_file){
         ifstream file(name_file);
         Dataset dataset;
@@ -65,6 +64,7 @@ namespace utils{
         t.rotate(pose[2]);
         return t;
     }
+    
     Vector3d t2v(Affine2d t)
     {
         Vector2d translation = t.translation();

@@ -1,20 +1,14 @@
 #include "tricycle.h"
 
-Tricycle::Tricycle(double timestamp,
-                   uint32_t tick_steer,
+Tricycle::Tricycle(uint32_t tick_steer,
                    uint32_t tick_traction,
                    Vector3d initial_model_pose,
                    Vector3d initial_sensor_pose) : 
-                                    _timestamp(timestamp),
-                                    _tick_steer(tick_steer),
-                                    _tick_traction(tick_traction),
-                                    _pose(initial_model_pose),
-                                    _sensor_pose(initial_sensor_pose) {}
+    _tick_steer(tick_steer),
+    _tick_traction(tick_traction),
+    _pose(initial_model_pose),
+    _sensor_pose(initial_sensor_pose) {}
 
-double Tricycle::get_timestamp()
-{
-    return _timestamp;
-}
 
 uint32_t Tricycle::get_tick_steer()
 {
@@ -107,6 +101,7 @@ std::vector<double> Tricycle::get_parameters_to_calibrate()
 // protected
 double Tricycle::encoder_to_angle(double k_steer, uint32_t tick)
 {
+    // If tick is greater than half a turn, consider it as negative tick
     int64_t t = (tick > _max_steer / 2) ? (int64_t)tick - _max_steer : (int64_t)tick;
     return 2 * M_PI / _max_steer * t * k_steer;
 }
@@ -124,71 +119,66 @@ double Tricycle::encoder_to_meters(double k_traction, uint32_t tick, uint32_t ne
     return delta_ticks * k_traction / _max_traction;
 }
 
-// Step function
-// Make the tricycle forward of one step
 void Tricycle::step(Vector3d d_pose, bool isCalibrated)
 {
+    // Displacement of the sensor (using static matrix product) as affine transformation
     Affine2d d_pose_sensor = utils::v2t(_sensor_pose_rel).inverse() * utils::v2t(d_pose) * utils::v2t(_sensor_pose_rel);
-    // std::cout << "STEP  d_pose_sensor:\n" << d_pose_sensor.matrix() << std::endl;
+    // Next pose of the robot (applying robot displacement)
     Vector3d next_pose = utils::t2v(utils::v2t(_pose) * utils::v2t(d_pose));
-    // Sensor pose (w.r.t. World frame) is the product of the pose of the KC and the relative pose of sensor
+    // Next pose of the sensor (applying sensor displacement)
     Vector3d sensor_pose = utils::t2v(utils::v2t(_sensor_pose) * d_pose_sensor);
 
-    // Assign model pose and sensor pose
+    // Assign new model pose and new sensor pose
     _pose = next_pose;
     _sensor_pose = sensor_pose;
 
-    // Actual traction tick is the next one
-
-    if (!isCalibrated)
+    
+    if (!isCalibrated)  // If parameters are uncalibrated
     {
         // Save in file actual model pose and actual sensor pose
         utils::write_pose(std::string("trajectories/model_pose_uncalibrated.txt"), _pose);
         utils::write_pose(std::string("trajectories/tracker_pose_uncalibrated.txt"), _sensor_pose);
     }
-    else
+    else 
     {
+        // Save in file actual calibrated model pose and actual calibrated sensor pose
         utils::write_pose(std::string("trajectories/model_pose_calibrated.txt"), _pose);
         utils::write_pose(std::string("trajectories/tracker_pose_calibrated.txt"), _sensor_pose);
     }
 }
 
-std::tuple<double, Vector3d> Tricycle::predict(std::vector<double> parameters,
-                                                         Vector3d pose,
-                                                         uint32_t actual_tick_traction,
-                                                         uint32_t next_tick_traction,
-                                                         uint32_t actual_tick_steer)
+Vector3d Tricycle::predict(std::vector<double> parameters,
+                           Vector3d pose,
+                           uint32_t actual_tick_traction,
+                           uint32_t next_tick_traction,
+                           uint32_t actual_tick_steer)
 {
+    // Unpack parameters
     double k_steer = parameters[0];
     double k_traction = parameters[1];
     double steer_offset = parameters[2];
     double baseline = parameters[3];
     Vector3d sensor_pose_rel = Vector3d(parameters[4], parameters[5], parameters[6]);
 
+    // Convert steering encoder measurements in steering angle
     double steering_angle = encoder_to_angle(k_steer, actual_tick_steer) + steer_offset;
 
-    // Total distance
+    // Convert traction encoder measurements in traveled distance
     double s = encoder_to_meters(k_traction, actual_tick_traction, next_tick_traction);
 
+    // Save actual informations
     _tick_steer = actual_tick_steer;
     _tick_traction = actual_tick_traction;
     _steering_angle = steering_angle;
 
+    // Compute displacements (ODE)
     double dtheta = s * sin(steering_angle) / baseline;
     double dx = s * cos(steering_angle) * cos(dtheta);
     double dy = s * cos(steering_angle) * sin(dtheta);
-
-    // std::cout << "-----DISPLACEMENT-----\n";
-    // std::cout << "dx: \n" << dx << std::endl;
-    // std::cout << "dy: \n" << dy << std::endl;
-    // std::cout << "dtheta: \n" << dtheta << std::endl;
-
-    // Next pose of KC is the product of the actual pose (w.r.t. world frame) and the movement
     Vector3d d_pose = Vector3d(dx, dy, dtheta);
 
-    // Vector3d next_pose = utils::t2v(utils::v2t(pose) * utils::v2t(d_pose));
-    // // Sensor pose (w.r.t. World frame) is the product of the pose of the KC and the relative pose of sensor
-    // Vector3d sensor_pose = utils::t2v(utils::v2t(next_pose) * utils::v2t(sensor_pose_rel));
+    // DEBUG
+    // std::cout << "-----DISPLACEMENT-----\n" << d_pose << std::endl;
 
-    return std::tuple<double, Vector3d>(steering_angle, d_pose);
+    return d_pose;
 }

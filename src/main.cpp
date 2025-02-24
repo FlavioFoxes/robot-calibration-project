@@ -22,19 +22,18 @@ int main(){
 	utils::Dataset dataset = utils::create_dataset(std::string("dataset/dataset.txt"));
 
 	// Take initial information to create tricycle
-	double timestamp = dataset.time[0];
 	uint32_t tick_s = dataset.ticks_steer[0];
 	uint32_t tick_t = dataset.ticks_traction[0];
 	Vector3d initial_model_pose(dataset.model_pose_x[0], dataset.model_pose_y[0], dataset.model_pose_theta[0]);
 	Vector3d initial_sensor_pose = Vector3d(dataset.tracker_pose_x[0], dataset.tracker_pose_y[0], dataset.tracker_pose_theta[0]);
 	
 	// Create tricycle with starting information
-	Tricycle tricycle = Tricycle(timestamp,
-								 tick_s,
+	Tricycle tricycle = Tricycle(tick_s,
 								 tick_t,
 								 initial_model_pose,
 								 initial_sensor_pose);
 
+	// Calibration cycle multiple times
 	for(int j=0; j<5; ++j){
 
 		// Initialize H and b matrices
@@ -58,23 +57,19 @@ int main(){
 			Vector3d actual_tricycle_pose = tricycle.get_pose();
 			Vector3d actual_sensor_pose = tricycle.get_sensor_pose();
 			
-			// TODO:
-			// predict deve restituire solo d_pose (steering angle è inutile)
-
 			// Compute prediction of displacement of the robot
-			std::tuple<double, Vector3d> tuple = tricycle.predict(tricycle.get_parameters_to_calibrate(),
-															      actual_tricycle_pose,
-															      actual_tick_traction,
-															      next_tick_traction, 
-															      actual_tick_steer);
-			// Unpack steering angle and displacement
-			double steering_angle = std::get<0>(tuple);
-			Vector3d d_pose = std::get<1>(tuple);
+			Vector3d d_pose = tricycle.predict(tricycle.get_parameters_to_calibrate(),
+											   actual_tricycle_pose,
+											   actual_tick_traction,
+											   next_tick_traction, 
+											   actual_tick_steer);
 
 			// Apply displacement to the robot
 			tricycle.step(d_pose, false);
 			
-			// Observation is the displacement between sensor measurements at i and i+1 timestamps
+			
+			// Observation is the displacement between sensor measurements 
+			//  at i and i+1 timestamps (as affine transformation)
 			Vector3d actual_tracker_pose = Vector3d(dataset.tracker_pose_x[i], dataset.tracker_pose_y[i], dataset.tracker_pose_theta[i]);
 			Vector3d next_tracker_pose = Vector3d(dataset.tracker_pose_x[i+1], dataset.tracker_pose_y[i+1], dataset.tracker_pose_theta[i+1]);
 			Affine2d observation = v2t(actual_tracker_pose).inverse() * v2t(next_tracker_pose);
@@ -82,7 +77,7 @@ int main(){
 			// Compute error 
 			Vector3d error = LS::compute_error(tricycle, observation, d_pose);
 			// Compute jacobian
-			MatrixXd J = LS::compute_numeric_jacobian(tricycle, actual_tricycle_pose, actual_tick_traction, next_tick_traction, actual_tick_steer, observation, d_pose);
+			MatrixXd J = LS::compute_numeric_jacobian(tricycle, actual_tricycle_pose, actual_tick_traction, next_tick_traction, actual_tick_steer, d_pose);
 
 			// Accumulate in H and b
 			H += J.transpose() * J;
@@ -95,13 +90,13 @@ int main(){
 
 		// Solve linear system		
 		VectorXd dx = H.ldlt().solve(-b);
-		std::cout << "dx:\n" << dx << std::endl;
 
 		// Calibrate parameters
 		std::vector<double> calibrated_parameters = LS::calibrate_parameters(dx, tricycle.get_parameters_to_calibrate());
 		tricycle.set_calibrated_parameters(calibrated_parameters);
 	
 		// DEBUG
+		std::cout << "dx:\n" << dx << std::endl;
 		std::cout << "PARAMETERS\n";
 		for(int i = 0; i < calibrated_parameters.size(); ++i){
 			std::cout << calibrated_parameters[i] << std::endl;
@@ -123,12 +118,11 @@ int main(){
 		uint32_t next_tick_traction = dataset.ticks_traction[i+1];
 
 		// Compute prediction of displacement of the robot
-		std::tuple<double, Vector3d> tuple = tricycle.predict(tricycle.get_parameters_to_calibrate(),
-																tricycle.get_pose(),
-																actual_tick_traction,
-																next_tick_traction, 
-																actual_tick_steer);
-		Vector3d d_pose = std::get<1>(tuple);
+		Vector3d d_pose = tricycle.predict(tricycle.get_parameters_to_calibrate(),
+										   tricycle.get_pose(),
+										   actual_tick_traction,
+										   next_tick_traction, 
+										   actual_tick_steer);
 		// Apply displacement to the robot
 		tricycle.step(d_pose, true);
 	}
