@@ -112,10 +112,17 @@ double Tricycle::encoder_to_meters(double k_traction, uint32_t tick, uint32_t ne
     // Delta ticks between two consecutive timestamps
     int64_t delta_ticks = ((int64_t)next_tick - (int64_t)tick);
     // Managing overflow
-    if (delta_ticks < -100000)
+    // If delta_ticks overcomes (positive) an half of UINT32_MAX
+    if (delta_ticks > (INT32_MAX)) 
     {
-        delta_ticks += UINT32_MAX;
+        delta_ticks -= UINT32_MAX; 
     }
+    // If delta_ticks overcomes (negative) an half of -UINT32_MAX
+    else if (delta_ticks < -(INT32_MAX))
+    {
+        delta_ticks += UINT32_MAX; 
+    }
+    
     return delta_ticks * k_traction / _max_traction;
 }
 
