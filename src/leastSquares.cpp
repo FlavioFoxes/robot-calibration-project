@@ -111,18 +111,3 @@ std::vector<double> LS::calibrate_parameters(VectorXd dx, std::vector<double> pa
 
     return calibrated_parameters;
 }
-
-/*
-    TODO: compute_analytic_jacobian
-
-    The function must compute the analytic jacobian matrix of the prediction 
-    function w.r.t. parameters to calibrate.
-    Check if it is necessary to use explicit or matricial form to compute
-    the derivatives
-
-    MatrixXd LS::compute_analytic_jacobian(Tricycle tricycle, 
-                                           uint32_t actual_tick_traction, 
-                                           uint32_t next_tick_traction, 
-                                           uint32_t actual_tick_steer)
-
-*/
