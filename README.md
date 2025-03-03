@@ -61,7 +61,7 @@ The calibrated, uncalibrated and ground truth trajectories are below:
     <td><img src="https://github.com/FlavioFoxes/robot-calibration-project/blob/main/assets/uncalibrated_robot.png" alt="Uncalibrated Robot"><br><strong>Dataset model pose - Uncalibrated robot pose</strong></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/FlavioFoxes/robot-calibration-project/blob/main/assets/uncalibrated_sensor.png" alt="Uncalibrated Sensor"><br><strong>Dataset model pose - Uncalibrated sensor pose</strong></td>
-    <td><img src="https://github.com/FlavioFoxes/robot-calibration-project/blob/main/assets/calibrated_sensor.png" alt="Calibrated Sensor"><br><strong>Dataset model pose - Calibrated sensor pose</strong></td>
+    <td><img src="https://github.com/FlavioFoxes/robot-calibration-project/blob/main/assets/uncalibrated_sensor.png" alt="Uncalibrated Sensor"><br><strong>Dataset tracker pose - Uncalibrated sensor pose</strong></td>
+    <td><img src="https://github.com/FlavioFoxes/robot-calibration-project/blob/main/assets/calibrated_sensor.png" alt="Calibrated Sensor"><br><strong>Dataset tracker pose - Calibrated sensor pose</strong></td>
   </tr>
 </table>
