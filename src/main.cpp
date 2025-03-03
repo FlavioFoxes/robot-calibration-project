@@ -5,14 +5,12 @@
 #include <cfloat>
 #include "utils.h"
 #include "leastSquares.h"
-// #include "tricycle.h"
 
 using Eigen::MatrixXd;
 using namespace Eigen;
 using namespace utils;
 
 int main(){
-
 
 	// --------------------------
 	// 			  MAIN
