@@ -35,9 +35,12 @@ int main(){
 	std::vector<Vector3d> robot_uncalibrated_trajectory{tricycle.get_pose()};
 	std::vector<Vector3d> sensor_uncalibrated_trajectory{tricycle.get_sensor_pose()};
 
-
+	float threshold = 1e-2;
+	
 	// Calibration cycle multiple times
-	for(int j=0; j<5; ++j){
+	for(int j=0; j<10; ++j){
+		// Number of discarded samples
+		int num_discarded = 0;
 
 		// Initialize H and b matrices
 		MatrixXd H(7,7);
@@ -83,6 +86,11 @@ int main(){
 
 			// Compute error 
 			Vector3d error = LS::compute_error(tricycle, observation, d_pose);
+			// If error is too high, discard the sample
+			if(error.norm() > threshold){
+				++num_discarded;
+				continue;
+			}
 			// Compute jacobian
 			MatrixXd J = LS::compute_numeric_jacobian(tricycle, actual_tricycle_pose, actual_tick_traction, next_tick_traction, actual_tick_steer, d_pose);
 
@@ -90,6 +98,8 @@ int main(){
 			H += J.transpose() * J;
 			b += J.transpose() * error;
 		}
+
+		std::cout << "num discarded:	" << num_discarded << std::endl;
 
 		// L2 regularization of H
 		double lambda = 0.5;
