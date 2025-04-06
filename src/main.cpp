@@ -35,12 +35,16 @@ int main(){
 	std::vector<Vector3d> robot_uncalibrated_trajectory{tricycle.get_pose()};
 	std::vector<Vector3d> sensor_uncalibrated_trajectory{tricycle.get_sensor_pose()};
 
-	float threshold = 1e-2;
+	// Initial threshold. 
+	// In this way at first iteration all samples from dataset are used
+	float threshold = 9999;
 	
 	// Calibration cycle multiple times
-	for(int j=0; j<10; ++j){
+	for(int j=0; j<7; ++j){
 		// Number of discarded samples
 		int num_discarded = 0;
+		// Total error over the dataset
+		double total_error = 0;
 
 		// Initialize H and b matrices
 		MatrixXd H(7,7);
@@ -79,14 +83,16 @@ int main(){
 			} 
 			
 			// Observation is the displacement between sensor measurements 
-			//  at i and i+1 timestamps (as affine transformation)
+			// at i and i+1 timestamps (as affine transformation)
 			Vector3d actual_tracker_pose = Vector3d(dataset.tracker_pose_x[i], dataset.tracker_pose_y[i], dataset.tracker_pose_theta[i]);
 			Vector3d next_tracker_pose = Vector3d(dataset.tracker_pose_x[i+1], dataset.tracker_pose_y[i+1], dataset.tracker_pose_theta[i+1]);
 			Affine2d observation = v2t(actual_tracker_pose).inverse() * v2t(next_tracker_pose);
 
-			// Compute error 
+			// Compute error and add it to total_error
 			Vector3d error = LS::compute_error(tricycle, observation, d_pose);
-			// If error is too high, discard the sample
+			total_error += error.norm();
+			// If error is higher than the mean error of the previous calibration cycle, 
+			// discard the sample
 			if(error.norm() > threshold){
 				++num_discarded;
 				continue;
@@ -100,6 +106,9 @@ int main(){
 		}
 
 		std::cout << "num discarded:	" << num_discarded << std::endl;
+
+		// Threshold is the mean of the errors over the dataset
+		threshold = total_error / dataset.time.size();
 
 		// L2 regularization of H
 		double lambda = 0.5;
