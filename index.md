@@ -61,24 +61,27 @@ $$
 (tick\_steer_i, tick\_traction_i, tick\_traction_{i+1}) 
 $$
 
-Then, the following steps are executed:
-1. **Prediction step**:
-fistly, encoder ticks are converted in steering angle and traveled distance. Starting with $$\delta$$:
+Then, the following steps are executed
 
-$$
-\delta =  
-\begin{cases} 
-    \frac{2\pi}{max\_steer}\cdot(tick\_steer_i - max\_steer) \cdot k_s , & \text{if   }  tick\_steer_i > \frac{max\_steer}{2}\\
-    \frac{2\pi}{max\_steer}\cdot tick\_steer_i \cdot k_s, & \text{otherwise } 
-\end{cases}
-$$
+1. **Prediction step**:  
+    Firstly, encoder ticks are converted into steering angle and traveled distance. Starting with the following equation for the steering angle $$\delta$$:
 
-at which the offset must be added:
+    $$
+    \delta =  
+    \begin{cases} 
+        \frac{2\pi}{max\_steer}\cdot(tick\_steer_i - max\_steer) \cdot k_s , & \text{if } tick\_steer_i > \frac{max\_steer}{2} \\
+        \frac{2\pi}{max\_steer}\cdot tick\_steer_i \cdot k_s, & \text{otherwise} \\
+    \end{cases}
+    $$
 
-$$
-\delta = \delta + \delta_{offset}
-$$
+    After this, the offset must be added to $$\delta$$:
 
+    $$
+    \delta = \delta + \delta_{offset}
+    $$
+
+    For the traction distance $$s$$:
+    TODO
 
 2. Computation of the error
 

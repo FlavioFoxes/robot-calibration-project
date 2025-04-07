@@ -111,24 +111,29 @@ are initialized to zero, and also a variable \(total\_error\) is initialized to 
 
 \[(tick\_steer_i, tick\_traction_i, tick\_traction_{i+1})\]
 
-<p>Then, the following steps are executed:</p>
+<p>Then, the following steps are executed</p>
+
 <ol>
-  <li><strong>Prediction step</strong>:
-fistly, encoder ticks are converted in steering angle and traveled distance. Starting with \(\delta\):</li>
-</ol>
+  <li>
+    <p><strong>Prediction step</strong>:<br />
+ Firstly, encoder ticks are converted into steering angle and traveled distance. Starting with the following equation for the steering angle \(\delta\):</p>
 
 \[\delta =  
-\begin{cases} 
-    \frac{2\pi}{max\_steer}\cdot(tick\_steer_i - max\_steer) \cdot k_s , &amp; \text{if   }  tick\_steer_i &gt; \frac{max\_steer}{2}\\
-    \frac{2\pi}{max\_steer}\cdot tick\_steer_i \cdot k_s, &amp; \text{otherwise } 
-\end{cases}\]
+ \begin{cases} 
+     \frac{2\pi}{max\_steer}\cdot(tick\_steer_i - max\_steer) \cdot k_s , &amp; \text{if } tick\_steer_i &gt; \frac{max\_steer}{2} \\
+     \frac{2\pi}{max\_steer}\cdot tick\_steer_i \cdot k_s, &amp; \text{otherwise} \\
+ \end{cases}\]
 
-<p>at which the offset must be added:</p>
+    <p>After this, the offset must be added to \(\delta\):</p>
 
 \[\delta = \delta + \delta_{offset}\]
 
-<ol>
-  <li>Computation of the error</li>
+    <p>For the traction distance \(s\):
+ TODO</p>
+  </li>
+  <li>
+    <p>Computation of the error</p>
+  </li>
 </ol>
 
 <h2 id="results">Results</h2>
