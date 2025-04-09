@@ -81,11 +81,15 @@ In detail:</p>
 <h2 id="kinematic-model">Kinematic model</h2>
 <p>The kinematic model of the front-traction wheel tricycle is the following:</p>
 
-\[\begin{cases}
+<div id="equations">
+$$
+\begin{cases}
 dx = s \cos(\delta)\cos(d\theta) \\
 dy = s \cos(\delta)\sin(d\theta) \\
 d\theta = s \frac{\sin(\delta)}{a}
-\end{cases}\]
+\end{cases}
+$$
+</div>
 
 <p>where:</p>
 <ul>
@@ -97,14 +101,17 @@ d\theta = s \frac{\sin(\delta)}{a}
 <p>The kinematic model of the robot is expressed with respect to its kinematic center.</p>
 
 <h2 id="algorithm">Algorithm</h2>
-<p>Calibration cycle is executed multiple times. Each cycle is composed by the following steps.</p>
+<p>Calibration cycle is executed multiple times. 
+A threshold is initialized to 9999 in order to select all samples in the first calibration cycle. 
+In the next cycles it is updated to remove the worst samples for the calibration.
+Each cycle is composed by the following steps.</p>
 
 <h3 id="initialization-step">Initialization step</h3>
 <p>Tricycle and sensor poses are set equal to \(model\_pose\) and \(tracker\_pose\) of the first measurement.
 Also the ticks about steering angle and traction are initialized with  \(tick\_steer\) and \(tick\_traction\)
 of the first measurement. <br />
 Finally, given that the number of parameters to calibrate is 7, two matrices \(\textbf{H}\) (7x7 matrix) and \(\textbf{b}\) (7x1 matrix) 
-are initialized to zero, and also a variable \(total\_error\) is initialized to zero.</p>
+are initialized to zero; also variable \(total\_error\) is initialized to zero.</p>
 
 <h3 id="update-step">Update step</h3>
 <p>Given the measurement \(i\)-th, the following information are saved to compute the prediciton:</p>
@@ -112,11 +119,14 @@ are initialized to zero, and also a variable \(total\_error\) is initialized to 
 \[(tick\_steer_i, tick\_traction_i, tick\_traction_{i+1})\]
 
 <p>Then, the following steps are executed</p>
-
+<div id="prediction">
+$$
+$$
+</div>
 <ol>
   <li>
-    <p><strong>Prediction step</strong>:<br />
- Firstly, encoder ticks are converted into steering angle and traveled distance. Starting with the following equation for the steering angle \(\delta\):</p>
+    <p><strong>Prediction step</strong> : <br />
+ Firstly, encoder ticks are converted into steering angle and traveled distance. Starting with the steering angle \(\delta\):</p>
 
 \[\delta =  
  \begin{cases} 
@@ -128,16 +138,144 @@ are initialized to zero, and also a variable \(total\_error\) is initialized to 
 
 \[\delta = \delta + \delta_{offset}\]
 
-    <p>For the traction distance \(s\):
- TODO</p>
+    <p>For the traction distance \(s\):</p>
+
+\[\Delta ticks = tick\_traction_{i+1} - tick\_traction_i \\
+ s = k_t \cdot \frac{\Delta ticks}{max\_traction}\]
+
+    <p>At this point, the robot displacement \(v_{dRobot}\) can be predicted through the <a href="#equations">kinematic model</a>.
+ The sensor displacement can be computed using the static matrix product:</p>
+
+    <div id="pred">
+ $$
+ T_{dSensor} = v2t(v_{sensor}^{robot})^{-1} \cdot v2t(v_{dRobot}) \cdot v2t(v_{sensor}^{robot})
+ $$
+ </div>
+
+    <p>where \(v2t\) is a function that converts a pose \([x, y, \theta]\) in a homogeneous matrix.
+ Finally, the robot and sensor poses can be updated:</p>
+
+\[\begin{equation}
+ v_{next\_robot} = t2v(v2t(v_{robot}) \cdot v2t(v_{dRobot})) \\
+ v_{next\_sensor} = t2v(v2t(v_{sensor}) \cdot T_{dSensor}) \\
+ v_{robot} = v_{next\_robot} \\
+ v_{sensor} = v_{next\_sensor}
+ \end{equation}\]
+
+    <p>where \(t2v\) is a function to convert a homogeneous matrix in a pose \([x, y, \theta]\)</p>
   </li>
   <li>
-    <p>Computation of the error</p>
+    <p><strong>Computation of the error</strong>:<br />
+The prediction is the <a href="#pred">displacement of the sensor</a> \(T_{dSensor}\) computed in the <a href="#prediction">prediction step</a>.<br />
+The observation is the displacement between the \(tracker\_pose_i\) and the next tracker pose \(tracker\_pose_{i+1}\):</p>
+
+\[T_{obs} = v2t(tracker\_pose_i)^{-1} \cdot v2t(tracker\_pose_{i+1})\]
+
+    <p>The error \(e\) is computed as:</p>
+
+\[e = t2v(T_{obs}^{-1} \cdot T_{dSensor})\]
+
+    <p>and its norm is added to \(total\_error\):</p>
+
+\[total\_error = total\_error + \vert\vert{e}\vert\vert\]
+
+    <p>If the error norm is higher than the threshold, discard the i-th sample.</p>
+  </li>
+  <li>
+    <p><strong>Computation of Jacobian matrix</strong>:<br />
+Define with \(f\) the entire prediction step, which takes as input the kinematic parameters and
+the sensor pose relative to the robot \(v^{robot}_{sensor}\), 
+and returns in output the displacement of the sensor \(T_{dSensor}\).
+The jacobian matrix \(J\) of the prediction function is a 3x7 matrix divided in:</p>
+
+\[J = [J_{kin} | J_{sensor}]\]
+
+    <p>where:</p>
+    <ul>
+      <li>
+        <p>\(J_{kin}\) is 3x4 matrix and concerns the kinematic parameters of the robot \(params_{kin} = (k_s, k_t, \delta_{offset}, a)\).
+It is computed using numeric derivatives, where each column of the jacobian is computed as:</p>
+
+\[J_{kin}^i = \left[\frac{t2v(f(params_{kin} + \epsilon_i, v^{robot}_{sensor})) - t2v(f(params_{kin} - \epsilon_i, v^{robot}_{sensor}))}{2\epsilon}\right]\]
+
+        <p>where \(\epsilon_i\) is a small factor (\(10^{-11}\)) added only to the i-th kinematic parameters. Its value has been chosen because the smaller displacement
+of the robot in the dataset (along one direction) is in the order of \(10^{-9}\);</p>
+      </li>
+      <li>
+        <p>\(J_{sensor}\) is a 3x3 matrix and concerns the sensor pose relative to the robot \(v^{robot}_{sensor}\). 
+It is also computed using numeric derivatives, where each column of the jacobian is computed as:</p>
+
+\[J_{sensor}^i = \left[\frac{t2v(f(params_{kin}, v^{robot}_{sensor}  + \epsilon_i)) - t2v(f(params_{kin}, v^{robot}_{sensor} - \epsilon_i))}{2\epsilon}\right]\]
+
+        <p>where \(\epsilon_i\) in this case is a 3D vector that has all zeros but the i-th component which has \(\epsilon\). The summation and the difference
+between \(v^{robot}_{sensor}\) and \(\epsilon_i\) is in a manifold space, so they have to be computed in the following way:</p>
+
+\[v^{robot}_{sensor}  + \epsilon_i = t2v(v2t(\epsilon_i) \cdot v2t(v^{robot}_{sensor})) \\
+v^{robot}_{sensor}  - \epsilon_i = t2v(v2t(-\epsilon_i) \cdot v2t(v^{robot}_{sensor}))\]
+      </li>
+    </ul>
   </li>
 </ol>
 
-<h2 id="results">Results</h2>
+<p>Now the error and the jacobian can be accumulated in the \(H\) and \(b\) matrices:</p>
 
+\[H = H + J^T \cdot J \\
+b = b + J^T \cdot e\]
+
+<p>and the update step is executed on the entire dataset.</p>
+
+<h3 id="regularization">Regularization</h3>
+<p>L2 regularization is applied on the \(H\) matrix, with \(\lambda = 0.5\):</p>
+
+\[H = H + \lambda I_{7x7}\]
+
+<h3 id="calibration">Calibration</h3>
+<p>At this point, the threshold is set equals to the mean total error accumulated during the update steps:</p>
+
+\[threshold = \frac{total\_error}{size_{dataset}}\]
+
+<p>and the linear system is solved:</p>
+
+\[dx \leftarrow solve(H \Delta x = -b)\]
+
+<p>The calibration vector \(dx\) has 7 components, one for each parameters to calibrate. It is composed by:</p>
+
+\[dx = [dx_{kin} | dx_{sensor}]\]
+
+<p>where \(dx_{kin}\) concerns the kinematic parameters and \(dx_{sensor}\) concerns the sensor pose relative to the robot.
+So, for the former the calibration is a simple sum because they are in an Euclidean space:
+\(params_{kin} = params_{kin} + dx_{kin}\)</p>
+
+<p>The latter is a 3D vector representing:</p>
+
+\[dv_{sensor}^{robot}  = [dx, dy, d\theta]_{sensor}^{robot}\]
+
+<p>The sensor pose relative to the robot lies on a manifold, so its calibration is:</p>
+
+\[v_{sensor}^{robot} = t2v(v2t(dv_{sensor}^{robot}) \cdot v2t(v_{sensor}^{robot}))\]
+
+<h2 id="results">Results</h2>
+<p>Running Gauss-Newton method for 5 times across the entire dataset, the calibrated parameters are:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">k_steer</code>: 0.551878;</li>
+  <li><code class="language-plaintext highlighter-rouge">k_traction</code>: 0.0084405;</li>
+  <li><code class="language-plaintext highlighter-rouge">steer_offset</code>: -0.0509976;</li>
+  <li><code class="language-plaintext highlighter-rouge">base_line</code>: 1.34298;</li>
+  <li><code class="language-plaintext highlighter-rouge">sensor_pose_rel</code>: (1.5995, 0.0453087, 0.0295093).</li>
+</ul>
+
+<p>The calibrated, uncalibrated and ground truth trajectories are below:</p>
+
+<table>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/FlavioFoxes/robot-calibration-project/main/assets/dataset.png" alt="Dataset" /><br /><strong>Dataset model pose - Dataset tracker pose</strong></td>
+    <td><img src="https://raw.githubusercontent.com/FlavioFoxes/robot-calibration-project/main/assets/uncalibrated_robot.png" alt="Uncalibrated Robot" /><br /><strong>Dataset model pose - Uncalibrated robot pose</strong></td>
+  </tr>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/FlavioFoxes/robot-calibration-project/main/assets/uncalibrated_sensor.png" alt="Uncalibrated Sensor" /><br /><strong>Dataset tracker pose - Uncalibrated sensor pose</strong></td>
+    <td><img src="https://raw.githubusercontent.com/FlavioFoxes/robot-calibration-project/main/assets/calibrated_sensor.png" alt="Calibrated Sensor" /><br /><strong>Dataset tracker pose - Calibrated sensor pose</strong></td>
+  </tr>
+</table>
 
 
       <footer class="site-footer">
