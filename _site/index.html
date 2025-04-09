@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
 
 <!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>Tricycle calibration | Tricycle calibration using least-squares approach.</title>
+<title>Tricycle calibration | Front-traction tricycle calibration using least-squares approach.</title>
 <meta name="generator" content="Jekyll v4.4.1" />
 <meta property="og:title" content="Tricycle calibration" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="Tricycle calibration using least-squares approach." />
-<meta property="og:description" content="Tricycle calibration using least-squares approach." />
+<meta name="description" content="Front-traction tricycle calibration using least-squares approach." />
+<meta property="og:description" content="Front-traction tricycle calibration using least-squares approach." />
 <link rel="canonical" href="http://localhost:4000/" />
 <meta property="og:url" content="http://localhost:4000/" />
 <meta property="og:site_name" content="Tricycle calibration" />
@@ -17,7 +17,7 @@
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="Tricycle calibration" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebSite","description":"Tricycle calibration using least-squares approach.","headline":"Tricycle calibration","name":"Tricycle calibration","url":"http://localhost:4000/"}</script>
+{"@context":"https://schema.org","@type":"WebSite","description":"Front-traction tricycle calibration using least-squares approach.","headline":"Tricycle calibration","name":"Tricycle calibration","url":"http://localhost:4000/"}</script>
 <!-- End Jekyll SEO tag -->
 
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -44,7 +44,7 @@
 
     <header class="page-header" role="banner">
       <h1 class="project-name">Tricycle calibration</h1>
-      <h2 class="project-tagline">Tricycle calibration using least-squares approach.</h2>
+      <h2 class="project-tagline">Front-traction tricycle calibration using least-squares approach.</h2>
       
       
     </header>
@@ -255,17 +255,19 @@ So, for the former the calibration is a simple sum because they are in an Euclid
 \[v_{sensor}^{robot} = t2v(v2t(dv_{sensor}^{robot}) \cdot v2t(v_{sensor}^{robot}))\]
 
 <h2 id="results">Results</h2>
-<p>Running Gauss-Newton method for 5 times across the entire dataset, the calibrated parameters are:</p>
+<p>The Gauss-Newton method is run 7 times, because it has been tested to achieve the best parameters configuration. As explained in the previous section, in the first cycle the entire dataset is used for the calibration.
+Then, a sumbsampling of the dataset is actuated, putting a threshold for the error norm equals to the mean of the total
+error accumulated in the previous cycle. <br />
+In the end, the calibrated parameters are:</p>
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">k_steer</code>: 0.551878;</li>
-  <li><code class="language-plaintext highlighter-rouge">k_traction</code>: 0.0084405;</li>
-  <li><code class="language-plaintext highlighter-rouge">steer_offset</code>: -0.0509976;</li>
-  <li><code class="language-plaintext highlighter-rouge">base_line</code>: 1.34298;</li>
-  <li><code class="language-plaintext highlighter-rouge">sensor_pose_rel</code>: (1.5995, 0.0453087, 0.0295093).</li>
+  <li><code class="language-plaintext highlighter-rouge">k_steer</code>: 0.556352;</li>
+  <li><code class="language-plaintext highlighter-rouge">k_traction</code>: 0.00947317;</li>
+  <li><code class="language-plaintext highlighter-rouge">steer_offset</code>: -0.0506322;</li>
+  <li><code class="language-plaintext highlighter-rouge">base_line</code>: 1.35205;</li>
+  <li><code class="language-plaintext highlighter-rouge">sensor_pose_rel</code>: (1.58809, 0.0039371, 0.0163697).</li>
 </ul>
 
-<p>The calibrated, uncalibrated and ground truth trajectories are below:</p>
-
+<p>The calibrated, uncalibrated and ground truth trajectories are shown below:</p>
 <table>
   <tr>
     <td><img src="https://raw.githubusercontent.com/FlavioFoxes/robot-calibration-project/main/assets/dataset.png" alt="Dataset" /><br /><strong>Dataset model pose - Dataset tracker pose</strong></td>

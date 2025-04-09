@@ -232,15 +232,17 @@ $$
 
 
 ## Results
-Running Gauss-Newton method for 5 times across the entire dataset, the calibrated parameters are:
-- `k_steer`: 0.551878;
-- `k_traction`: 0.0084405;
-- `steer_offset`: -0.0509976;
--	`base_line`: 1.34298;
--	`sensor_pose_rel`: (1.5995, 0.0453087, 0.0295093).
+The Gauss-Newton method is run 7 times, because it has been tested to achieve the best parameters configuration. As explained in the previous section, in the first cycle the entire dataset is used for the calibration.
+Then, a sumbsampling of the dataset is actuated, putting a threshold for the error norm equals to the mean of the total
+error accumulated in the previous cycle. \\
+In the end, the calibrated parameters are:
+- `k_steer`: 0.556352;
+- `k_traction`: 0.00947317;
+- `steer_offset`: -0.0506322;
+-	`base_line`: 1.35205;
+-	`sensor_pose_rel`: (1.58809, 0.0039371, 0.0163697).
 
-The calibrated, uncalibrated and ground truth trajectories are below:
-
+The calibrated, uncalibrated and ground truth trajectories are shown below:
 <table>
   <tr>
     <td><img src="https://raw.githubusercontent.com/FlavioFoxes/robot-calibration-project/main/assets/dataset.png" alt="Dataset"><br><strong>Dataset model pose - Dataset tracker pose</strong></td>
