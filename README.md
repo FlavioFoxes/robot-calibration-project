@@ -9,7 +9,11 @@ In detail:
 - `k_traction`: how many meters correspond to one tick;
 - `steer_offset`: at which angle corresponds the zero of the wheel;
 -	`base_line`: the lenght of the base_line;
--	`sensor_pose_rel`: sensor pose (x, y, &theta;) relative to the robot.
+-	`sensor_pose_rel`: sensor pose $$(x, y, &theta;)$$ relative to the robot.
+
+## Implementation
+All information about implementation and mathematical formalism of the calibration engine are published at the
+following [GitHub Page](https://flaviofoxes.github.io/robot-calibration-project/)
 
 ## Structure overview
 In `dataset` folder there is the text file containing the dataset used to calibrated the robot.
@@ -48,7 +52,7 @@ make
 ## Results
 The Gauss-Newton method is run 7 times. In the first cycle, the entire dataset is used for the calibration.
 Then, a sumbsampling of the dataset is actuated, putting a threshold for the error norm equals to the mean of the total
-error accumulated in the previous cycle. \\
+error accumulated in the previous cycle. \
 In the end, the calibrated parameters are:
 - `k_steer`: 0.556352;
 - `k_traction`: 0.00947317;
